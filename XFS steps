@@ -1,0 +1,29 @@
+fdisk /dev/sdb
+partprobe
+fdisk :l
+pvcreate /dev/sdb1
+pvcreate /dev/sdb2
+pvdisplay
+vgcreate vol1 /dev/sdb1
+vgcreate vol2 /dev/sdb2
+vgscan
+lvcreate --name cloud --size 4G vol1
+lvcreate --name cloud --size 4G vol2
+lvscan
+
+mkfs.xfs /dev/vol1/cloud
+mkfs.xfs /dev/vol2/cloud
+mkdir /opt/cloud
+mkdir /var/cloud
+mount /dev/vol1/cloud /opt/cloud
+mount /dev/vol2/cloud /var/cloud
+df :h
+
+Extending partition
+umount /opt/cloud
+fdisk /dev/sdb3
+pvcreate /dev/sdb3
+vgextend vol1 /dev/sdb3
+lvextend :L+1G /dev/vol1/cloud
+mount /opt/cloud
+xfs_growfs /dev/vol1/cloud
